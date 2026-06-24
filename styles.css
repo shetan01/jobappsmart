@@ -679,9 +679,103 @@ textarea::placeholder {
 }
 
 #tailorBulletsText {
-    white-space: pre-wrap;
     font-size: 0.95rem;
-    line-height: 1.8;
+    line-height: 1.6;
+}
+
+.resume-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+}
+
+.resume-contact {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.resume-section-header {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.resume-summary {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text);
+    margin-bottom: 16px;
+}
+
+.resume-competencies {
+    margin-bottom: 16px;
+}
+
+.resume-competency {
+    font-size: 0.9rem;
+    color: var(--text);
+    padding: 2px 0;
+}
+
+.resume-company {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
+.resume-bullets {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+}
+
+.resume-bullets li {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--text);
+    padding: 4px 0 4px 18px;
+    position: relative;
+}
+
+.resume-bullets li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 12px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--text-muted);
+}
+
+.resume-education {
+    margin-bottom: 12px;
+}
+
+.resume-edu-line {
+    font-size: 0.92rem;
+    color: var(--text);
+    padding: 2px 0;
+}
+
+.resume-line {
+    font-size: 0.92rem;
+    color: var(--text);
+    padding: 2px 0;
 }
 
 /* ── FOOTER ── */

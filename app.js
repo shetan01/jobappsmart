@@ -46,7 +46,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.copy-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const targetId = btn.dataset.target;
-            const text = document.getElementById(targetId).innerText;
+            const el = document.getElementById(targetId);
+            let text;
+            if (targetId === 'tailorBulletsText' && el.querySelector('.resume-section-header')) {
+                text = extractResumeText(el);
+            } else {
+                text = el.innerText;
+            }
             navigator.clipboard.writeText(text).then(() => {
                 btn.classList.add('copied');
                 const originalHTML = btn.innerHTML;
@@ -356,11 +362,132 @@ function renderScoreComparison(original, tailored) {
 
 function renderTailorResults(resumeText) {
     const container = document.getElementById('tailorBulletsText');
-    container.textContent = resumeText;
+    container.innerHTML = formatResumeHTML(resumeText);
 
     const tailorResults = document.getElementById('tailorResults');
     tailorResults.style.display = 'block';
     tailorResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function formatResumeHTML(text) {
+    const lines = text.split('\n');
+    let html = '';
+    let i = 0;
+
+    const sectionHeaders = [
+        'PROFESSIONAL SUMMARY', 'CORE COMPETENCIES', 'EDUCATION',
+        'SKILLS', 'TECHNICAL SKILLS', 'CERTIFICATIONS'
+    ];
+
+    const isCompanyLine = (line) => {
+        const trimmed = line.trim();
+        if (!trimmed) return false;
+        const companyPatterns = [
+            /^[A-Z][A-Z\s&]+(@\s*[A-Z]|,|\|)/,
+            /^(MICROSOFT|GOOGLE|CISCO|WELLS\s*FARGO|JLL)/i
+        ];
+        return companyPatterns.some(p => p.test(trimmed)) && /\(\d{4}/.test(trimmed);
+    };
+
+    const isSectionHeader = (line) => {
+        const trimmed = line.trim();
+        return sectionHeaders.some(h => trimmed === h || trimmed.startsWith(h + ':'));
+    };
+
+    const isBullet = (line) => {
+        return /^\s*[-•]\s/.test(line);
+    };
+
+    while (i < lines.length) {
+        const line = lines[i].trim();
+
+        if (!line) {
+            i++;
+            continue;
+        }
+
+        if (i === 0 && !isSectionHeader(line) && !isBullet(line) && !isCompanyLine(line)) {
+            html += `<div class="resume-name">${escapeHtml(line)}</div>`;
+            i++;
+            if (i < lines.length && lines[i].trim() && !isSectionHeader(lines[i].trim())) {
+                html += `<div class="resume-contact">${escapeHtml(lines[i].trim())}</div>`;
+                i++;
+            }
+            continue;
+        }
+
+        if (isSectionHeader(line)) {
+            html += `<div class="resume-section-header">${escapeHtml(line)}</div>`;
+            i++;
+
+            if (line === 'PROFESSIONAL SUMMARY' || line.startsWith('PROFESSIONAL SUMMARY')) {
+                let summary = '';
+                while (i < lines.length && !isSectionHeader(lines[i].trim()) && !isCompanyLine(lines[i]) && !isBullet(lines[i])) {
+                    if (lines[i].trim()) {
+                        summary += (summary ? ' ' : '') + lines[i].trim();
+                    } else if (summary) {
+                        break;
+                    }
+                    i++;
+                }
+                if (summary) {
+                    html += `<div class="resume-summary">${escapeHtml(summary)}</div>`;
+                }
+            } else if (line === 'CORE COMPETENCIES' || line.startsWith('CORE COMPETENCIES')) {
+                html += '<div class="resume-competencies">';
+                while (i < lines.length && !isSectionHeader(lines[i].trim()) && !isCompanyLine(lines[i])) {
+                    const comp = lines[i].trim();
+                    if (!comp) { i++; continue; }
+                    if (isBullet(lines[i])) {
+                        html += `<div class="resume-competency">${escapeHtml(comp)}</div>`;
+                    } else if (comp.includes('|')) {
+                        comp.split('|').forEach(c => {
+                            const t = c.trim();
+                            if (t) html += `<div class="resume-competency">- ${escapeHtml(t)}</div>`;
+                        });
+                    } else {
+                        html += `<div class="resume-competency">${escapeHtml(comp)}</div>`;
+                    }
+                    i++;
+                }
+                html += '</div>';
+            } else if (line === 'EDUCATION' || line.startsWith('EDUCATION')) {
+                html += '<div class="resume-education">';
+                while (i < lines.length && !isSectionHeader(lines[i].trim()) && !isCompanyLine(lines[i])) {
+                    const edu = lines[i].trim();
+                    if (edu) {
+                        html += `<div class="resume-edu-line">${escapeHtml(edu)}</div>`;
+                    }
+                    i++;
+                }
+                html += '</div>';
+            }
+            continue;
+        }
+
+        if (isCompanyLine(line)) {
+            html += `<div class="resume-company">${escapeHtml(line)}</div>`;
+            i++;
+            html += '<ul class="resume-bullets">';
+            while (i < lines.length && !isSectionHeader(lines[i].trim()) && !isCompanyLine(lines[i])) {
+                const bline = lines[i].trim();
+                if (!bline) { i++; continue; }
+                if (isBullet(lines[i])) {
+                    html += `<li>${escapeHtml(bline.replace(/^[-•]\s*/, ''))}</li>`;
+                } else {
+                    html += `<li>${escapeHtml(bline)}</li>`;
+                }
+                i++;
+            }
+            html += '</ul>';
+            continue;
+        }
+
+        html += `<div class="resume-line">${escapeHtml(line)}</div>`;
+        i++;
+    }
+
+    return html;
 }
 
 function renderScore(score) {
@@ -433,6 +560,45 @@ function renderBullets(bullets) {
 
 function renderCoverLetter(text) {
     document.getElementById('coverLetterText').textContent = text;
+}
+
+function extractResumeText(el) {
+    const parts = [];
+    el.querySelectorAll(':scope > *').forEach(node => {
+        const cls = node.className;
+        if (cls === 'resume-name') {
+            parts.push(node.textContent);
+        } else if (cls === 'resume-contact') {
+            parts.push(node.textContent);
+            parts.push('');
+        } else if (cls === 'resume-section-header') {
+            parts.push(node.textContent);
+        } else if (cls === 'resume-summary') {
+            parts.push(node.textContent);
+            parts.push('');
+        } else if (cls === 'resume-competencies') {
+            node.querySelectorAll('.resume-competency').forEach(c => {
+                parts.push(c.textContent);
+            });
+            parts.push('');
+        } else if (cls === 'resume-company') {
+            parts.push(node.textContent);
+        } else if (cls === 'resume-bullets') {
+            node.querySelectorAll('li').forEach(li => {
+                parts.push('- ' + li.textContent);
+            });
+            parts.push('');
+        } else if (cls === 'resume-education') {
+            node.querySelectorAll('.resume-edu-line').forEach(line => {
+                parts.push(line.textContent);
+            });
+            parts.push('');
+        } else if (cls === 'resume-line') {
+            parts.push(node.textContent);
+        }
+    });
+    while (parts.length && parts[parts.length - 1] === '') parts.pop();
+    return parts.join('\n');
 }
 
 function escapeHtml(str) {
