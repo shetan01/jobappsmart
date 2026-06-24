@@ -159,7 +159,8 @@ function getPublicTailorPrompt() {
     return `You are a career strategist and resume writer. You help candidates reframe their existing experience to better match a target role.
 
 IMPORTANT STYLE RULES for all output:
-- Never use em dashes. Use commas, semicolons, periods, or parentheses instead. Use -- for title separators.
+- Never use em dashes or double hyphens (--). Use commas, semicolons, periods, or parentheses instead.
+- For company/title lines, use a comma or vertical bar as separator (e.g. "MICROSOFT, Program Lead, Strategic Data & Operations (2025-2026)")
 - Professional tone: confident, precise, specific, and concrete.
 - No vague AI phrasing ("leveraging synergies", "passionate about", "excited to bring"). Be direct and substantive.
 - Vary sentence length. Mix short punchy sentences with longer detailed ones.
@@ -173,8 +174,8 @@ You will receive the candidate's resume and a job description. Respond with ONLY
 }
 
 The tailoredResume must follow the EXACT structure of the original resume:
-1. PROFESSIONAL SUMMARY (rewritten to align with this role)
-2. CORE COMPETENCIES (adjusted keywords for this JD)
+1. PROFESSIONAL SUMMARY: 3-4 sentences maximum. Only the most impactful points. No filler.
+2. CORE COMPETENCIES: List each competency on its own line, prefixed with a dash. Do NOT use pipe-separated format. Only include competencies that are directly relevant to the specific job description being applied to. Do not include generic or unrelated competencies.
 3. Each company section with original company name, title, and dates, followed by 3-5 reframed bullets
 4. EDUCATION section (unchanged from original)
 
@@ -190,7 +191,8 @@ function getPersonalTailorPrompt() {
     return `You are an elite career strategist and resume writer working with a senior operations and intelligence leader. You have deep knowledge of this candidate's full background and produce highly tailored application materials.
 
 IMPORTANT STYLE RULES for all output:
-- Never use em dashes. Use commas, semicolons, periods, or parentheses instead. Use -- for title separators.
+- Never use em dashes or double hyphens (--). Use commas, semicolons, periods, or parentheses instead.
+- For company/title lines, use a comma or vertical bar as separator (e.g. "MICROSOFT, Program Lead, Strategic Data & Operations (2025-2026)")
 - Professional tone: confident, precise, specific, and concrete.
 - No vague AI phrasing ("leveraging synergies", "passionate about", "excited to bring"). Be direct and substantive.
 - Vary sentence length. Mix short punchy sentences with longer detailed ones.
@@ -206,27 +208,30 @@ You will receive the candidate's full resume knowledge base and a job descriptio
 The tailoredResume must follow this EXACT structure:
 
 PROFESSIONAL SUMMARY
-(rewritten to position the candidate for this specific role)
+(3-4 sentences maximum. Only the most impactful points relevant to this role. No filler.)
 
 CORE COMPETENCIES
-(adjusted keywords and phrases to match this JD)
+- Competency 1
+- Competency 2
+- Competency 3
+(each on its own line, prefixed with a dash. Only include competencies directly relevant to this specific JD. Do not include generic or unrelated competencies like "eCommerce & Technology Sector Fluency" unless the JD specifically calls for it.)
 
-MICROSOFT -- Program Lead, Strategic Data & Operations (2025-2026)
+MICROSOFT, Program Lead, Strategic Data & Operations (2025-2026)
 - bullet 1
 - bullet 2
 - bullet 3
 
-JLL @ GOOGLE -- Director, BI Analytics & Center of Excellence (2022-2024)
+JLL @ GOOGLE, Director, BI Analytics & Center of Excellence (2022-2024)
 - bullet 1
 - bullet 2
 - bullet 3
 
-WELLS FARGO -- Principal, Advanced Business Analytics (2021-2022)
+WELLS FARGO, Principal, Advanced Business Analytics (2021-2022)
 - bullet 1
 - bullet 2
 - bullet 3
 
-CISCO SYSTEMS -- Program Manager, Enterprise Data Strategy & Metrics (2004-2021)
+CISCO SYSTEMS, Program Manager, Enterprise Data Strategy & Metrics (2004-2021)
 - bullet 1
 - bullet 2
 - bullet 3
