@@ -1,4 +1,5 @@
 const DEFAULT_API_KEY = '';
+let currentMode = 'diagnose';
 
 function getApiKey() {
     const input = document.getElementById('apiKeyInput').value.trim();
@@ -7,20 +8,44 @@ function getApiKey() {
 
 document.addEventListener('DOMContentLoaded', () => {
     const gearBtn = document.getElementById('gearBtn');
-    const settingsPanel = document.getElementById('settingsPanel');
+    const settingsDropdown = document.getElementById('settingsDropdown');
     const toggleKeyVis = document.getElementById('toggleKeyVis');
     const apiKeyInput = document.getElementById('apiKeyInput');
     const analyzeBtn = document.getElementById('analyzeBtn');
-    const resultsSection = document.getElementById('resultsSection');
+    const resumeInputSection = document.getElementById('resumeInputSection');
 
-    gearBtn.addEventListener('click', () => {
+    gearBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         gearBtn.classList.toggle('active');
-        settingsPanel.classList.toggle('open');
+        settingsDropdown.classList.toggle('open');
+    });
+
+    settingsDropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    document.addEventListener('click', () => {
+        gearBtn.classList.remove('active');
+        settingsDropdown.classList.remove('open');
     });
 
     toggleKeyVis.addEventListener('click', () => {
         const isPassword = apiKeyInput.type === 'password';
         apiKeyInput.type = isPassword ? 'text' : 'password';
+    });
+
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentMode = btn.dataset.mode;
+
+            if (currentMode === 'diagnose') {
+                resumeInputSection.classList.remove('hidden');
+            } else {
+                resumeInputSection.classList.add('hidden');
+            }
+        });
     });
 
     document.querySelectorAll('.tab').forEach(tab => {
@@ -58,9 +83,17 @@ async function handleAnalyze() {
         return;
     }
 
+    if (currentMode === 'diagnose') {
+        const resumeInput = document.getElementById('resumeInput').value.trim();
+        if (!resumeInput) {
+            showError('Please paste your resume first.');
+            return;
+        }
+    }
+
     const apiKey = getApiKey();
     if (!apiKey) {
-        showError('No API key found. Open settings (gear icon) and enter your Anthropic API key.');
+        showError('No API key found. Click the gear icon and enter your Anthropic API key.');
         return;
     }
 
@@ -86,16 +119,42 @@ async function handleAnalyze() {
     }
 }
 
-async function callClaude(apiKey, jobDescription) {
-    const systemPrompt = `You are a career strategist and professional resume writer. You analyze job descriptions against a candidate's resume and produce tailored application materials.
+function getDiagnosePrompt() {
+    return `You are a career strategist. You analyze job descriptions against a candidate's resume and provide an honest diagnostic assessment.
 
 IMPORTANT STYLE RULES for all output:
 - Never use em dashes. Use commas, semicolons, periods, or parentheses instead.
 - Write in a confident, precise, professional voice.
-- Be honest about gaps. Do not fabricate experience.
-- Resume bullets should start with strong action verbs and include quantified results where possible.
+- Be completely honest about gaps. Do not fabricate or embellish.
 
 You will receive the candidate's resume and a job description. Respond with ONLY valid JSON (no markdown fences) in this exact structure:
+
+{
+  "matchScore": <number 0-100>,
+  "strengths": ["strength 1", "strength 2", ...],
+  "gaps": ["gap 1", "gap 2", ...],
+  "bullets": ["suggestion 1", "suggestion 2", ...],
+  "coverLetter": "full cover letter text"
+}
+
+DIAGNOSE MODE RULES:
+- Identify what matches well between the resume and the role
+- Be honest and specific about gaps or missing qualifications
+- For "bullets": suggest areas the candidate should strengthen or reframe, NOT rewritten resume bullets. These are coaching suggestions, not rewrites.
+- For the cover letter: use ONLY content and experience that appears in the candidate's actual resume. Do not add, invent, or embellish any experience. 3-4 paragraphs, confident tone.`;
+}
+
+function getTailorPrompt() {
+    return `You are an elite career strategist and resume writer working with a senior operations and intelligence leader. You have deep knowledge of this candidate's background and produce highly tailored application materials.
+
+IMPORTANT STYLE RULES for all output:
+- Never use em dashes. Use commas, semicolons, periods, or parentheses instead.
+- Professional tone: confident, precise, specific, and concrete.
+- No vague AI phrasing ("leveraging synergies", "passionate about", "excited to bring"). Be direct and substantive.
+- Vary sentence length. Mix short punchy sentences with longer detailed ones.
+- Resume bullets must start with strong action verbs and include quantified results where possible.
+
+You will receive the candidate's resume knowledge base and a job description. Respond with ONLY valid JSON (no markdown fences) in this exact structure:
 
 {
   "matchScore": <number 0-100>,
@@ -105,20 +164,28 @@ You will receive the candidate's resume and a job description. Respond with ONLY
   "coverLetter": "full cover letter text"
 }
 
-For the cover letter:
-- Address it generically (no company name unless in the job description)
-- 3-4 paragraphs
-- Confident and precise tone, no em dashes
-- Connect the candidate's specific experience to the role's requirements
-- Close with enthusiasm but not desperation`;
+TAILOR MODE RULES:
+- Select and rewrite the strongest resume bullets to match this specific job description
+- Prioritize bullets that directly address the JD's requirements
+- Quantify results wherever the source data supports it
+- For the cover letter: generate from the rewritten bullets, connecting specific experience to the role's requirements. 3-4 paragraphs. Close with enthusiasm, not desperation. Address generically unless the company name is in the JD.`;
+}
 
-    const userMessage = `Here is my resume:
+async function callClaude(apiKey, jobDescription) {
+    const isDiagnose = currentMode === 'diagnose';
+    const systemPrompt = isDiagnose ? getDiagnosePrompt() : getTailorPrompt();
 
-${MY_RESUME}
+    const resume = isDiagnose
+        ? document.getElementById('resumeInput').value.trim()
+        : MY_RESUME;
+
+    const userMessage = `Here is ${isDiagnose ? 'my' : 'the candidate\'s'} resume:
+
+${resume}
 
 ---
 
-Here is the job description I am applying to:
+Here is the job description ${isDiagnose ? 'I am' : 'to'} apply${isDiagnose ? 'ing' : ''} to:
 
 ${jobDescription}
 
@@ -161,6 +228,11 @@ function renderResults(data) {
     const resultsSection = document.getElementById('resultsSection');
     resultsSection.style.display = 'block';
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    const bulletsHeading = document.getElementById('bulletsHeading');
+    bulletsHeading.textContent = currentMode === 'diagnose'
+        ? 'Areas to Strengthen'
+        : 'Tailored Resume Bullets';
 
     renderScore(data.matchScore);
     renderSummary(data);

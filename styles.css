@@ -29,13 +29,13 @@ body {
     min-height: 100vh;
 }
 
+/* ── HEADER ── */
 .header {
     background: linear-gradient(135deg, #141722 0%, #1a1e2e 55%, #222838 100%);
-    height: 64px;
-    padding: 0 2rem;
+    padding: 16px 2rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     position: sticky;
     top: 0;
     z-index: 200;
@@ -43,49 +43,55 @@ body {
     border-bottom: 1px solid var(--border);
 }
 
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+.header-title {
+    text-align: center;
 }
 
-.logo-mark {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
-    background: var(--gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    font-weight: 800;
-    color: #0f1117;
-    letter-spacing: -0.5px;
-    box-shadow: 0 2px 8px rgba(212, 168, 83, 0.4);
-}
-
-.logo-name {
-    font-size: 1.3rem;
+.header-title h1 {
+    font-size: 1.6rem;
     font-weight: 700;
     color: #fff;
-    letter-spacing: -0.4px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
 
-.logo-name span {
+.gold {
     color: var(--gold);
 }
 
-.tagline {
-    color: var(--text-muted);
+.byline {
     font-size: 0.8rem;
-    margin-left: 0.25rem;
-    padding-left: 0.75rem;
-    border-left: 1px solid var(--border);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.shimmer {
+    color: var(--gold);
+    background: linear-gradient(
+        120deg,
+        var(--gold) 0%,
+        #f0d078 40%,
+        #fff5cc 50%,
+        #f0d078 60%,
+        var(--gold) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { background-position: 200% center; }
+    50% { background-position: 0% center; }
 }
 
 .header-right {
-    display: flex;
-    gap: 0.6rem;
+    position: absolute;
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .gear-btn {
@@ -108,48 +114,27 @@ body {
     background: rgba(212, 168, 83, 0.15);
 }
 
-.app-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 24px 24px 80px;
-}
-
-.instruction-bar {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    line-height: 1.6;
-    text-align: center;
-}
-
-.gold {
-    color: var(--gold);
-}
-
-.settings-panel {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, margin 0.3s ease;
-    margin-bottom: 0;
-}
-
-.settings-panel.open {
-    max-height: 200px;
-    margin-bottom: 24px;
-}
-
-.settings-inner {
+/* ── SETTINGS DROPDOWN ── */
+.settings-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 340px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 300;
 }
 
-.settings-inner label {
+.settings-dropdown.open {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+.settings-dropdown label {
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-muted);
@@ -199,7 +184,7 @@ body {
 .settings-hint {
     font-size: 0.8rem;
     color: var(--text-muted);
-    margin-top: 8px;
+    margin-top: 10px;
     line-height: 1.5;
 }
 
@@ -212,6 +197,59 @@ body {
     text-decoration: underline;
 }
 
+/* ── APP CONTAINER ── */
+.app-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 24px 80px;
+}
+
+.instruction-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* ── MODE TOGGLE ── */
+.mode-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 24px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 7px;
+    transition: all 0.2s;
+}
+
+.mode-btn:hover {
+    color: var(--text);
+}
+
+.mode-btn.active {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* ── INPUT SECTION ── */
 .input-section {
     margin-bottom: 32px;
 }
@@ -224,6 +262,14 @@ body {
     letter-spacing: 0.05em;
     display: block;
     margin-bottom: 8px;
+}
+
+.resume-input-section {
+    margin-bottom: 16px;
+}
+
+.resume-input-section.hidden {
+    display: none;
 }
 
 textarea {
@@ -293,6 +339,7 @@ textarea::placeholder {
     to { transform: rotate(360deg); }
 }
 
+/* ── RESULTS ── */
 .results-section {
     animation: fadeIn 0.3s ease;
 }
@@ -382,6 +429,7 @@ textarea::placeholder {
     border-color: var(--success);
 }
 
+/* ── SCORE RING ── */
 .score-ring-container {
     display: flex;
     justify-content: center;
@@ -425,6 +473,7 @@ textarea::placeholder {
     color: var(--text-muted);
 }
 
+/* ── SUMMARY BLOCKS ── */
 .section-block {
     margin-bottom: 24px;
 }
@@ -521,9 +570,10 @@ textarea::placeholder {
     margin-top: 16px;
 }
 
+/* ── FOOTER ── */
 footer {
     text-align: center;
-    padding: 40px 0 0;
+    padding: 40px 0 24px;
     color: var(--text-muted);
     font-size: 0.85rem;
 }
@@ -537,17 +587,23 @@ footer a:hover {
     text-decoration: underline;
 }
 
+/* ── RESPONSIVE ── */
 @media (max-width: 600px) {
     .header {
-        padding: 0 1rem;
+        padding: 14px 1rem;
     }
 
-    .tagline {
-        display: none;
+    .header-title h1 {
+        font-size: 1.3rem;
     }
 
-    .logo-name {
-        font-size: 1.1rem;
+    .header-right {
+        right: 1rem;
+    }
+
+    .settings-dropdown {
+        width: 280px;
+        right: -0.5rem;
     }
 
     .app-container {

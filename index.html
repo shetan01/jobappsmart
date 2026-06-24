@@ -8,10 +8,9 @@
 </head>
 <body>
     <header class="header">
-        <div class="logo">
-            <div class="logo-mark">JS</div>
-            <div class="logo-name">Job<span>AppSmart</span></div>
-            <div class="tagline">by Sherry Tan</div>
+        <div class="header-title">
+            <h1>Job<span class="gold">AppSmart</span></h1>
+            <p class="byline">by <span class="shimmer">Sherry Tan</span></p>
         </div>
         <div class="header-right">
             <button class="gear-btn" id="gearBtn" title="Settings" aria-label="Settings">
@@ -20,16 +19,7 @@
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
             </button>
-        </div>
-    </header>
-
-    <div class="app-container">
-        <div class="instruction-bar">
-            Paste a job description to get your match score, tailored resume bullets, and a cover letter draft, personalized to your background.
-        </div>
-
-        <div class="settings-panel" id="settingsPanel">
-            <div class="settings-inner">
+            <div class="settings-dropdown" id="settingsDropdown">
                 <label for="apiKeyInput">Anthropic API Key</label>
                 <div class="api-key-row">
                     <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off">
@@ -37,11 +27,26 @@
                         <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                     </button>
                 </div>
-                <p class="settings-hint">To use this tool, enter your own Anthropic API key, or visit <a href="https://sherry-tan.vercel.app" target="_blank" rel="noopener noreferrer">sherry-tan.vercel.app</a> to connect with Sherry.</p>
+                <p class="settings-hint">To use this tool, enter your Anthropic API key below, or visit <a href="https://sherry-tan.vercel.app" target="_blank" rel="noopener noreferrer">sherry-tan.vercel.app</a> to connect with Sherry.</p>
             </div>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <div class="instruction-bar">
+            Analyze any job description: get a match diagnosis, targeted insights, and a cover letter draft tailored to your background.
+        </div>
+
+        <div class="mode-toggle">
+            <button class="mode-btn active" data-mode="diagnose">Diagnose</button>
+            <button class="mode-btn" data-mode="tailor">Tailor</button>
         </div>
 
         <div class="input-section">
+            <div id="resumeInputSection" class="resume-input-section">
+                <label for="resumeInput">Your Resume</label>
+                <textarea id="resumeInput" placeholder="Paste your resume here..." rows="6"></textarea>
+            </div>
             <label for="jobDescription">Job Description</label>
             <textarea id="jobDescription" placeholder="Paste the full job description here..." rows="10"></textarea>
             <button class="analyze-btn" id="analyzeBtn">
@@ -66,7 +71,7 @@
 
             <div class="tab-content" id="tab-bullets">
                 <div class="tab-header">
-                    <h3>Tailored Resume Bullets</h3>
+                    <h3 id="bulletsHeading">Tailored Resume Bullets</h3>
                     <button class="copy-btn" data-target="bulletsText">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         Copy
