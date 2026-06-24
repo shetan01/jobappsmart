@@ -70,10 +70,8 @@ async function handleAnalyze() {
         showError('Please paste a job description first.');
         return;
     }
-    if (!resumeText) {
-        showError('Please paste your resume first.');
-        return;
-    }
+
+    const resume = resumeText || MY_RESUME;
 
     const apiKey = getApiKey();
     if (!apiKey) {
@@ -86,7 +84,7 @@ async function handleAnalyze() {
     clearError();
 
     try {
-        const result = await callClaude(apiKey, getDiagnosePrompt(), resumeText, jobDesc);
+        const result = await callClaude(apiKey, getDiagnosePrompt(), resume, jobDesc);
         renderResults(result);
         document.getElementById('tailorSection').style.display = 'block';
         document.getElementById('tailorResults').style.display = 'none';
