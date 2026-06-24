@@ -43,13 +43,13 @@
         </div>
 
         <div class="input-section">
+            <label for="jobDescription">Job Description</label>
+            <textarea id="jobDescription" placeholder="Paste the full job description here..." rows="10"></textarea>
             <div id="resumeInputSection" class="resume-input-section">
                 <label for="resumeInput" id="resumeLabel">Your Resume</label>
                 <textarea id="resumeInput" placeholder="Paste your resume here..." rows="6"></textarea>
                 <p class="resume-hint hidden" id="resumeHint">Leave blank to use pre-loaded resume (personal mode). Paste your own for public mode.</p>
             </div>
-            <label for="jobDescription">Job Description</label>
-            <textarea id="jobDescription" placeholder="Paste the full job description here..." rows="10"></textarea>
             <button class="analyze-btn" id="analyzeBtn">
                 <span class="btn-text">Analyze &amp; Generate</span>
                 <span class="btn-loading" style="display:none;">
@@ -60,8 +60,8 @@
 
         <div class="results-section" id="resultsSection" style="display:none;">
             <div class="tabs">
-                <button class="tab active" data-tab="summary">Summary</button>
-                <button class="tab" data-tab="bullets">Bullets</button>
+                <button class="tab active" data-tab="summary">Match Score</button>
+                <button class="tab" data-tab="bullets">Resume Bullets</button>
                 <button class="tab" data-tab="cover-letter">Cover Letter</button>
             </div>
 
