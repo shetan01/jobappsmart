@@ -34,6 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
         apiKeyInput.type = isPassword ? 'text' : 'password';
     });
 
+    const resumeHint = document.getElementById('resumeHint');
+    const resumeLabel = document.getElementById('resumeLabel');
+    const resumeInput = document.getElementById('resumeInput');
+
     document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -41,9 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
             currentMode = btn.dataset.mode;
 
             if (currentMode === 'diagnose') {
-                resumeInputSection.classList.remove('hidden');
+                resumeLabel.textContent = 'Your Resume';
+                resumeInput.placeholder = 'Paste your resume here...';
+                resumeHint.classList.add('hidden');
             } else {
-                resumeInputSection.classList.add('hidden');
+                resumeLabel.textContent = 'Your Resume (optional)';
+                resumeInput.placeholder = 'Paste your resume here, or leave blank to use pre-loaded resume...';
+                resumeHint.classList.remove('hidden');
             }
         });
     });
@@ -144,8 +152,8 @@ DIAGNOSE MODE RULES:
 - For the cover letter: use ONLY content and experience that appears in the candidate's actual resume. Do not add, invent, or embellish any experience. 3-4 paragraphs, confident tone.`;
 }
 
-function getTailorPrompt() {
-    return `You are an elite career strategist and resume writer working with a senior operations and intelligence leader. You have deep knowledge of this candidate's background and produce highly tailored application materials.
+function getPublicTailorPrompt() {
+    return `You are a career strategist and resume writer. You help candidates reframe their existing experience to better match a target role.
 
 IMPORTANT STYLE RULES for all output:
 - Never use em dashes. Use commas, semicolons, periods, or parentheses instead.
@@ -154,7 +162,7 @@ IMPORTANT STYLE RULES for all output:
 - Vary sentence length. Mix short punchy sentences with longer detailed ones.
 - Resume bullets must start with strong action verbs and include quantified results where possible.
 
-You will receive the candidate's resume knowledge base and a job description. Respond with ONLY valid JSON (no markdown fences) in this exact structure:
+You will receive the candidate's resume and a job description. Respond with ONLY valid JSON (no markdown fences) in this exact structure:
 
 {
   "matchScore": <number 0-100>,
@@ -164,28 +172,68 @@ You will receive the candidate's resume knowledge base and a job description. Re
   "coverLetter": "full cover letter text"
 }
 
-TAILOR MODE RULES:
-- Select and rewrite the strongest resume bullets to match this specific job description
+PUBLIC TAILOR MODE RULES:
+- Reframe and reword the candidate's EXISTING bullets to better align with the job description
+- NEVER add, invent, or imply experience, skills, or accomplishments not present in the original resume
+- You may restructure, combine, or re-emphasize existing content, but every claim must trace back to something in the resume
+- Prioritize bullets that most closely address the JD's requirements
+- Quantify results only where the original resume already provides the data
+- For the cover letter: use ONLY reframed content from the candidate's actual resume. 3-4 paragraphs. Confident tone. Address generically unless the company name is in the JD.`;
+}
+
+function getPersonalTailorPrompt() {
+    return `You are an elite career strategist and resume writer working with a senior operations and intelligence leader. You have deep knowledge of this candidate's full background and produce highly tailored application materials.
+
+IMPORTANT STYLE RULES for all output:
+- Never use em dashes. Use commas, semicolons, periods, or parentheses instead.
+- Professional tone: confident, precise, specific, and concrete.
+- No vague AI phrasing ("leveraging synergies", "passionate about", "excited to bring"). Be direct and substantive.
+- Vary sentence length. Mix short punchy sentences with longer detailed ones.
+- Resume bullets must start with strong action verbs and include quantified results where possible.
+
+You will receive the candidate's full resume knowledge base and a job description. Respond with ONLY valid JSON (no markdown fences) in this exact structure:
+
+{
+  "matchScore": <number 0-100>,
+  "strengths": ["strength 1", "strength 2", ...],
+  "gaps": ["gap 1", "gap 2", ...],
+  "bullets": ["bullet 1", "bullet 2", ...],
+  "coverLetter": "full cover letter text"
+}
+
+PERSONAL TAILOR MODE RULES:
+- Fully optimize and craft bullets for the best possible JD match
+- Draw from the candidate's entire resume knowledge base to select, combine, and rewrite the strongest bullets
 - Prioritize bullets that directly address the JD's requirements
 - Quantify results wherever the source data supports it
+- You may restructure and synthesize across roles to produce the most compelling narrative
+- The candidate will review all output before sending, so optimize aggressively for fit
 - For the cover letter: generate from the rewritten bullets, connecting specific experience to the role's requirements. 3-4 paragraphs. Close with enthusiasm, not desperation. Address generically unless the company name is in the JD.`;
 }
 
 async function callClaude(apiKey, jobDescription) {
-    const isDiagnose = currentMode === 'diagnose';
-    const systemPrompt = isDiagnose ? getDiagnosePrompt() : getTailorPrompt();
+    const userResume = document.getElementById('resumeInput').value.trim();
+    let systemPrompt;
+    let resume;
 
-    const resume = isDiagnose
-        ? document.getElementById('resumeInput').value.trim()
-        : MY_RESUME;
+    if (currentMode === 'diagnose') {
+        systemPrompt = getDiagnosePrompt();
+        resume = userResume;
+    } else if (userResume) {
+        systemPrompt = getPublicTailorPrompt();
+        resume = userResume;
+    } else {
+        systemPrompt = getPersonalTailorPrompt();
+        resume = MY_RESUME;
+    }
 
-    const userMessage = `Here is ${isDiagnose ? 'my' : 'the candidate\'s'} resume:
+    const userMessage = `Here is the candidate's resume:
 
 ${resume}
 
 ---
 
-Here is the job description ${isDiagnose ? 'I am' : 'to'} apply${isDiagnose ? 'ing' : ''} to:
+Here is the job description to evaluate against:
 
 ${jobDescription}
 
@@ -230,9 +278,13 @@ function renderResults(data) {
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     const bulletsHeading = document.getElementById('bulletsHeading');
-    bulletsHeading.textContent = currentMode === 'diagnose'
-        ? 'Areas to Strengthen'
-        : 'Tailored Resume Bullets';
+    if (currentMode === 'diagnose') {
+        bulletsHeading.textContent = 'Areas to Strengthen';
+    } else if (document.getElementById('resumeInput').value.trim()) {
+        bulletsHeading.textContent = 'Reframed Resume Bullets';
+    } else {
+        bulletsHeading.textContent = 'Tailored Resume Bullets';
+    }
 
     renderScore(data.matchScore);
     renderSummary(data);
