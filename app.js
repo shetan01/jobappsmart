@@ -1,5 +1,4 @@
 const DEFAULT_API_KEY = '';
-let currentMode = 'diagnose';
 
 function getApiKey() {
     const input = document.getElementById('apiKeyInput').value.trim();
@@ -12,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleKeyVis = document.getElementById('toggleKeyVis');
     const apiKeyInput = document.getElementById('apiKeyInput');
     const analyzeBtn = document.getElementById('analyzeBtn');
-    const resumeInputSection = document.getElementById('resumeInputSection');
+    const tailorBtn = document.getElementById('tailorBtn');
 
     gearBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -32,28 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     toggleKeyVis.addEventListener('click', () => {
         const isPassword = apiKeyInput.type === 'password';
         apiKeyInput.type = isPassword ? 'text' : 'password';
-    });
-
-    const resumeHint = document.getElementById('resumeHint');
-    const resumeLabel = document.getElementById('resumeLabel');
-    const resumeInput = document.getElementById('resumeInput');
-
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentMode = btn.dataset.mode;
-
-            if (currentMode === 'diagnose') {
-                resumeLabel.textContent = 'Your Resume';
-                resumeInput.placeholder = 'Paste your resume here...';
-                resumeHint.classList.add('hidden');
-            } else {
-                resumeLabel.textContent = 'Your Resume (optional)';
-                resumeInput.placeholder = 'Paste your resume here, or leave blank to use pre-loaded resume...';
-                resumeHint.classList.remove('hidden');
-            }
-        });
     });
 
     document.querySelectorAll('.tab').forEach(tab => {
@@ -82,21 +59,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     analyzeBtn.addEventListener('click', handleAnalyze);
+    tailorBtn.addEventListener('click', handleTailor);
 });
 
 async function handleAnalyze() {
     const jobDesc = document.getElementById('jobDescription').value.trim();
+    const resumeText = document.getElementById('resumeInput').value.trim();
+
     if (!jobDesc) {
         showError('Please paste a job description first.');
         return;
     }
-
-    if (currentMode === 'diagnose') {
-        const resumeInput = document.getElementById('resumeInput').value.trim();
-        if (!resumeInput) {
-            showError('Please paste your resume first.');
-            return;
-        }
+    if (!resumeText) {
+        showError('Please paste your resume first.');
+        return;
     }
 
     const apiKey = getApiKey();
@@ -106,25 +82,54 @@ async function handleAnalyze() {
     }
 
     const btn = document.getElementById('analyzeBtn');
-    const btnText = btn.querySelector('.btn-text');
-    const btnLoading = btn.querySelector('.btn-loading');
-
-    btn.disabled = true;
-    btnText.style.display = 'none';
-    btnLoading.style.display = 'inline';
-
+    setButtonLoading(btn, true);
     clearError();
 
     try {
-        const result = await callClaude(apiKey, jobDesc);
+        const result = await callClaude(apiKey, getDiagnosePrompt(), resumeText, jobDesc);
         renderResults(result);
+        document.getElementById('tailorSection').style.display = 'block';
+        document.getElementById('tailorResults').style.display = 'none';
     } catch (err) {
         showError(err.message || 'Something went wrong. Check your API key and try again.');
     } finally {
-        btn.disabled = false;
-        btnText.style.display = 'inline';
-        btnLoading.style.display = 'none';
+        setButtonLoading(btn, false);
     }
+}
+
+async function handleTailor() {
+    const jobDesc = document.getElementById('jobDescription').value.trim();
+    const userResume = document.getElementById('resumeInput').value.trim();
+
+    const apiKey = getApiKey();
+    if (!apiKey) {
+        showError('No API key found. Click the gear icon and enter your Anthropic API key.');
+        return;
+    }
+
+    const btn = document.getElementById('tailorBtn');
+    setButtonLoading(btn, true);
+
+    const usePersonal = !!MY_RESUME && MY_RESUME !== 'PASTE YOUR RESUME HERE';
+    const systemPrompt = usePersonal ? getPersonalTailorPrompt() : getPublicTailorPrompt();
+    const resume = usePersonal ? MY_RESUME : userResume;
+
+    try {
+        const result = await callClaude(apiKey, systemPrompt, resume, jobDesc);
+        renderTailorResults(result.bullets);
+    } catch (err) {
+        showError(err.message || 'Something went wrong. Check your API key and try again.');
+    } finally {
+        setButtonLoading(btn, false);
+    }
+}
+
+function setButtonLoading(btn, loading) {
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoading = btn.querySelector('.btn-loading');
+    btn.disabled = loading;
+    btnText.style.display = loading ? 'none' : 'inline';
+    btnLoading.style.display = loading ? 'inline' : 'none';
 }
 
 function getDiagnosePrompt() {
@@ -165,11 +170,7 @@ IMPORTANT STYLE RULES for all output:
 You will receive the candidate's resume and a job description. Respond with ONLY valid JSON (no markdown fences) in this exact structure:
 
 {
-  "matchScore": <number 0-100>,
-  "strengths": ["strength 1", "strength 2", ...],
-  "gaps": ["gap 1", "gap 2", ...],
-  "bullets": ["bullet 1", "bullet 2", ...],
-  "coverLetter": "full cover letter text"
+  "bullets": ["bullet 1", "bullet 2", ...]
 }
 
 PUBLIC TAILOR MODE RULES:
@@ -178,7 +179,7 @@ PUBLIC TAILOR MODE RULES:
 - You may restructure, combine, or re-emphasize existing content, but every claim must trace back to something in the resume
 - Prioritize bullets that most closely address the JD's requirements
 - Quantify results only where the original resume already provides the data
-- For the cover letter: use ONLY reframed content from the candidate's actual resume. 3-4 paragraphs. Confident tone. Address generically unless the company name is in the JD.`;
+- Return 8-12 of the strongest reframed bullets`;
 }
 
 function getPersonalTailorPrompt() {
@@ -194,11 +195,7 @@ IMPORTANT STYLE RULES for all output:
 You will receive the candidate's full resume knowledge base and a job description. Respond with ONLY valid JSON (no markdown fences) in this exact structure:
 
 {
-  "matchScore": <number 0-100>,
-  "strengths": ["strength 1", "strength 2", ...],
-  "gaps": ["gap 1", "gap 2", ...],
-  "bullets": ["bullet 1", "bullet 2", ...],
-  "coverLetter": "full cover letter text"
+  "bullets": ["bullet 1", "bullet 2", ...]
 }
 
 PERSONAL TAILOR MODE RULES:
@@ -208,25 +205,10 @@ PERSONAL TAILOR MODE RULES:
 - Quantify results wherever the source data supports it
 - You may restructure and synthesize across roles to produce the most compelling narrative
 - The candidate will review all output before sending, so optimize aggressively for fit
-- For the cover letter: generate from the rewritten bullets, connecting specific experience to the role's requirements. 3-4 paragraphs. Close with enthusiasm, not desperation. Address generically unless the company name is in the JD.`;
+- Return 8-12 of the strongest tailored bullets`;
 }
 
-async function callClaude(apiKey, jobDescription) {
-    const userResume = document.getElementById('resumeInput').value.trim();
-    let systemPrompt;
-    let resume;
-
-    if (currentMode === 'diagnose') {
-        systemPrompt = getDiagnosePrompt();
-        resume = userResume;
-    } else if (userResume) {
-        systemPrompt = getPublicTailorPrompt();
-        resume = userResume;
-    } else {
-        systemPrompt = getPersonalTailorPrompt();
-        resume = MY_RESUME;
-    }
-
+async function callClaude(apiKey, systemPrompt, resume, jobDescription) {
     const userMessage = `Here is the candidate's resume:
 
 ${resume}
@@ -277,15 +259,6 @@ function renderResults(data) {
     resultsSection.style.display = 'block';
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    const bulletsHeading = document.getElementById('bulletsHeading');
-    if (currentMode === 'diagnose') {
-        bulletsHeading.textContent = 'Areas to Strengthen';
-    } else if (document.getElementById('resumeInput').value.trim()) {
-        bulletsHeading.textContent = 'Reframed Resume Bullets';
-    } else {
-        bulletsHeading.textContent = 'Tailored Resume Bullets';
-    }
-
     renderScore(data.matchScore);
     renderSummary(data);
     renderBullets(data.bullets);
@@ -295,6 +268,18 @@ function renderResults(data) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.querySelector('[data-tab="summary"]').classList.add('active');
     document.getElementById('tab-summary').classList.add('active');
+}
+
+function renderTailorResults(bullets) {
+    const container = document.getElementById('tailorBulletsText');
+    container.innerHTML = `
+        <ul>
+            ${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
+        </ul>`;
+
+    const tailorResults = document.getElementById('tailorResults');
+    tailorResults.style.display = 'block';
+    tailorResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderScore(score) {

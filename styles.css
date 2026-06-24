@@ -216,37 +216,18 @@ body {
     text-align: center;
 }
 
-/* ── MODE TOGGLE ── */
-.mode-toggle {
-    display: flex;
-    gap: 4px;
+/* ── MODE INDICATOR ── */
+.mode-indicator {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 4px;
-    margin-bottom: 24px;
-}
-
-.mode-btn {
-    flex: 1;
     padding: 10px 16px;
-    background: none;
-    border: none;
-    color: var(--text-muted);
+    margin-bottom: 24px;
+    text-align: center;
     font-size: 0.9rem;
     font-weight: 600;
-    cursor: pointer;
-    border-radius: 7px;
-    transition: all 0.2s;
-}
-
-.mode-btn:hover {
-    color: var(--text);
-}
-
-.mode-btn.active {
-    background: var(--accent);
-    color: #fff;
+    color: var(--accent);
+    letter-spacing: 0.03em;
 }
 
 /* ── INPUT SECTION ── */
@@ -579,6 +560,93 @@ textarea::placeholder {
     color: var(--danger);
     font-size: 0.9rem;
     margin-top: 16px;
+}
+
+/* ── TAILOR SECTION ── */
+.tailor-section {
+    margin-top: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+}
+
+.tailor-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.tailor-header h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+
+.tailor-header p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.tailor-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: var(--gold);
+    color: #0f1117;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.tailor-btn:hover:not(:disabled) {
+    background: #e0b85e;
+}
+
+.tailor-btn:active:not(:disabled) {
+    transform: scale(0.99);
+}
+
+.tailor-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.tailor-results {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.tailor-results ul {
+    list-style: none;
+    padding: 0;
+}
+
+.tailor-results ul li {
+    padding: 10px 0;
+    padding-left: 20px;
+    position: relative;
+    font-size: 0.95rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.tailor-results ul li:last-child {
+    border-bottom: none;
+}
+
+.tailor-results ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 18px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
 }
 
 /* ── FOOTER ── */
