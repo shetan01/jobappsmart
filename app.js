@@ -114,7 +114,7 @@ async function handleTailor() {
 
     try {
         const result = await callClaude(apiKey, systemPrompt, resume, jobDesc);
-        renderTailorResults(result.bullets);
+        renderTailorResults(result.tailoredResume);
     } catch (err) {
         showError(err.message || 'Something went wrong. Check your API key and try again.');
     } finally {
@@ -159,51 +159,92 @@ function getPublicTailorPrompt() {
     return `You are a career strategist and resume writer. You help candidates reframe their existing experience to better match a target role.
 
 IMPORTANT STYLE RULES for all output:
-- Never use em dashes. Use commas, semicolons, periods, or parentheses instead.
+- Never use em dashes. Use commas, semicolons, periods, or parentheses instead. Use -- for title separators.
 - Professional tone: confident, precise, specific, and concrete.
 - No vague AI phrasing ("leveraging synergies", "passionate about", "excited to bring"). Be direct and substantive.
 - Vary sentence length. Mix short punchy sentences with longer detailed ones.
 - Resume bullets must start with strong action verbs and include quantified results where possible.
+- Output clean plain text only. No markdown formatting, no bold, no headers with #.
 
 You will receive the candidate's resume and a job description. Respond with ONLY valid JSON (no markdown fences) in this exact structure:
 
 {
-  "bullets": ["bullet 1", "bullet 2", ...]
+  "tailoredResume": "full resume text as a single string with newlines"
 }
+
+The tailoredResume must follow the EXACT structure of the original resume:
+1. PROFESSIONAL SUMMARY (rewritten to align with this role)
+2. CORE COMPETENCIES (adjusted keywords for this JD)
+3. Each company section with original company name, title, and dates, followed by 3-5 reframed bullets
+4. EDUCATION section (unchanged from original)
 
 PUBLIC TAILOR MODE RULES:
 - Reframe and reword the candidate's EXISTING bullets to better align with the job description
 - NEVER add, invent, or imply experience, skills, or accomplishments not present in the original resume
 - You may restructure, combine, or re-emphasize existing content, but every claim must trace back to something in the resume
-- Prioritize bullets that most closely address the JD's requirements
 - Quantify results only where the original resume already provides the data
-- Return 8-12 of the strongest reframed bullets`;
+- Keep the Education section exactly as-is`;
 }
 
 function getPersonalTailorPrompt() {
     return `You are an elite career strategist and resume writer working with a senior operations and intelligence leader. You have deep knowledge of this candidate's full background and produce highly tailored application materials.
 
 IMPORTANT STYLE RULES for all output:
-- Never use em dashes. Use commas, semicolons, periods, or parentheses instead.
+- Never use em dashes. Use commas, semicolons, periods, or parentheses instead. Use -- for title separators.
 - Professional tone: confident, precise, specific, and concrete.
 - No vague AI phrasing ("leveraging synergies", "passionate about", "excited to bring"). Be direct and substantive.
 - Vary sentence length. Mix short punchy sentences with longer detailed ones.
 - Resume bullets must start with strong action verbs and include quantified results where possible.
+- Output clean plain text only. No markdown formatting, no bold, no headers with #.
 
 You will receive the candidate's full resume knowledge base and a job description. Respond with ONLY valid JSON (no markdown fences) in this exact structure:
 
 {
-  "bullets": ["bullet 1", "bullet 2", ...]
+  "tailoredResume": "full resume text as a single string with newlines"
 }
 
+The tailoredResume must follow this EXACT structure:
+
+PROFESSIONAL SUMMARY
+(rewritten to position the candidate for this specific role)
+
+CORE COMPETENCIES
+(adjusted keywords and phrases to match this JD)
+
+MICROSOFT -- Program Lead, Strategic Data & Operations (2025-2026)
+- bullet 1
+- bullet 2
+- bullet 3
+
+JLL @ GOOGLE -- Director, BI Analytics & Center of Excellence (2022-2024)
+- bullet 1
+- bullet 2
+- bullet 3
+
+WELLS FARGO -- Principal, Advanced Business Analytics (2021-2022)
+- bullet 1
+- bullet 2
+- bullet 3
+
+CISCO SYSTEMS -- Program Manager, Enterprise Data Strategy & Metrics (2004-2021)
+- bullet 1
+- bullet 2
+- bullet 3
+
+EDUCATION
+MBA (High Honors), Golden Gate University
+BS Computer Science (High Honors), San Jose State University
+Technical: SQL, DAX, R, Python, VS Code, Next.js, Supabase, Claude Code, Power BI, Tableau
+Certifications: Google Data Analytics Professional; Certified in Agentic AI Workflows (Anthropic)
+
 PERSONAL TAILOR MODE RULES:
+- 3-5 bullets per company, rewritten to align with the JD
+- Where an important gap exists relative to the JD, add a new bullet drawing from the full resume knowledge base to fill it
 - Fully optimize and craft bullets for the best possible JD match
 - Draw from the candidate's entire resume knowledge base to select, combine, and rewrite the strongest bullets
-- Prioritize bullets that directly address the JD's requirements
 - Quantify results wherever the source data supports it
-- You may restructure and synthesize across roles to produce the most compelling narrative
 - The candidate will review all output before sending, so optimize aggressively for fit
-- Return 8-12 of the strongest tailored bullets`;
+- Keep the Education section exactly as shown above, unchanged`;
 }
 
 async function callClaude(apiKey, systemPrompt, resume, jobDescription) {
@@ -231,7 +272,7 @@ Analyze the fit and generate all requested materials. Return ONLY the JSON objec
         },
         body: JSON.stringify({
             model: 'claude-sonnet-4-6',
-            max_tokens: 4096,
+            max_tokens: 6000,
             system: systemPrompt,
             messages: [{ role: 'user', content: userMessage }]
         })
@@ -268,12 +309,9 @@ function renderResults(data) {
     document.getElementById('tab-summary').classList.add('active');
 }
 
-function renderTailorResults(bullets) {
+function renderTailorResults(resumeText) {
     const container = document.getElementById('tailorBulletsText');
-    container.innerHTML = `
-        <ul>
-            ${bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('')}
-        </ul>`;
+    container.textContent = resumeText;
 
     const tailorResults = document.getElementById('tailorResults');
     tailorResults.style.display = 'block';

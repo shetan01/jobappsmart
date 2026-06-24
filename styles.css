@@ -621,32 +621,10 @@ textarea::placeholder {
     border-top: 1px solid var(--border);
 }
 
-.tailor-results ul {
-    list-style: none;
-    padding: 0;
-}
-
-.tailor-results ul li {
-    padding: 10px 0;
-    padding-left: 20px;
-    position: relative;
+#tailorBulletsText {
+    white-space: pre-wrap;
     font-size: 0.95rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.tailor-results ul li:last-child {
-    border-bottom: none;
-}
-
-.tailor-results ul li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 18px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--gold);
+    line-height: 1.8;
 }
 
 /* ── FOOTER ── */
