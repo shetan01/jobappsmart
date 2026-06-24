@@ -30,7 +30,7 @@ body {
 }
 
 .header {
-    background: linear-gradient(135deg, #080a10 0%, #0f1117 55%, #1a1d27 100%);
+    background: linear-gradient(135deg, #141722 0%, #1a1e2e 55%, #222838 100%);
     height: 64px;
     padding: 0 2rem;
     display: flex;
@@ -39,7 +39,8 @@ body {
     position: sticky;
     top: 0;
     z-index: 200;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid var(--border);
 }
 
 .logo {
