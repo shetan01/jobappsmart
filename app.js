@@ -1,4 +1,5 @@
 const DEFAULT_API_KEY = '';
+let originalScore = 0;
 
 function getApiKey() {
     const input = document.getElementById('apiKeyInput').value.trim();
@@ -115,6 +116,12 @@ async function handleTailor() {
     try {
         const result = await callClaude(apiKey, systemPrompt, resume, jobDesc);
         renderTailorResults(result.tailoredResume);
+
+        const scoreContainer = document.getElementById('tailorScoreComparison');
+        scoreContainer.innerHTML = '<p class="score-loading"><span class="spinner"></span> Calculating new match score...</p>';
+
+        const reScore = await callClaude(apiKey, getDiagnosePrompt(), result.tailoredResume, jobDesc);
+        renderScoreComparison(originalScore, reScore.matchScore);
     } catch (err) {
         showError(err.message || 'Something went wrong. Check your API key and try again.');
     } finally {
@@ -299,6 +306,8 @@ Analyze the fit and generate all requested materials. Return ONLY the JSON objec
 }
 
 function renderResults(data) {
+    originalScore = data.matchScore;
+
     const resultsSection = document.getElementById('resultsSection');
     resultsSection.style.display = 'block';
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -312,6 +321,37 @@ function renderResults(data) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.querySelector('[data-tab="summary"]').classList.add('active');
     document.getElementById('tab-summary').classList.add('active');
+}
+
+function renderScoreComparison(original, tailored) {
+    const container = document.getElementById('tailorScoreComparison');
+    const delta = tailored - original;
+    const sign = delta > 0 ? '+' : '';
+    let deltaColor = 'var(--success)';
+    if (delta === 0) deltaColor = 'var(--warning)';
+    else if (delta < 0) deltaColor = 'var(--danger)';
+
+    let tailoredColor = 'var(--danger)';
+    if (tailored >= 70) tailoredColor = 'var(--success)';
+    else if (tailored >= 45) tailoredColor = 'var(--warning)';
+
+    let originalColor = 'var(--danger)';
+    if (original >= 70) originalColor = 'var(--success)';
+    else if (original >= 45) originalColor = 'var(--warning)';
+
+    container.innerHTML = `
+        <div class="score-comparison">
+            <div class="score-box">
+                <span class="score-box-label">Original</span>
+                <span class="score-box-value" style="color:${originalColor}">${original}%</span>
+            </div>
+            <div class="score-arrow">&#8594;</div>
+            <div class="score-box">
+                <span class="score-box-label">Tailored</span>
+                <span class="score-box-value" style="color:${tailoredColor}">${tailored}%</span>
+            </div>
+            <div class="score-delta" style="color:${deltaColor}">${sign}${delta}%</div>
+        </div>`;
 }
 
 function renderTailorResults(resumeText) {
