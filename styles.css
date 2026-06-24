@@ -29,52 +29,104 @@ body {
     min-height: 100vh;
 }
 
-.app-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px 24px 80px;
-}
-
-header {
+.header {
+    background: linear-gradient(135deg, #080a10 0%, #0f1117 55%, #1a1d27 100%);
+    height: 64px;
+    padding: 0 2rem;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 32px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
 }
 
-h1 {
-    font-size: 1.75rem;
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #0f1117;
+    letter-spacing: -0.5px;
+    box-shadow: 0 2px 8px rgba(212, 168, 83, 0.4);
+}
+
+.logo-name {
+    font-size: 1.3rem;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    color: #fff;
+    letter-spacing: -0.4px;
 }
 
-.subtitle {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-top: 4px;
-}
-
-.gold {
+.logo-name span {
     color: var(--gold);
 }
 
-.gear-btn {
-    background: none;
-    border: 1px solid var(--border);
+.tagline {
     color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-left: 0.25rem;
+    padding-left: 0.75rem;
+    border-left: 1px solid var(--border);
+}
+
+.header-right {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.gear-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
     padding: 8px;
     border-radius: 8px;
     transition: all 0.2s;
-    flex-shrink: 0;
-    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .gear-btn:hover,
 .gear-btn.active {
-    color: var(--accent);
-    border-color: var(--accent);
-    background: var(--accent-glow);
+    color: var(--gold);
+    border-color: var(--gold);
+    background: rgba(212, 168, 83, 0.15);
+}
+
+.app-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 24px 80px;
+}
+
+.instruction-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.gold {
+    color: var(--gold);
 }
 
 .settings-panel {
@@ -485,12 +537,20 @@ footer a:hover {
 }
 
 @media (max-width: 600px) {
-    .app-container {
-        padding: 24px 16px 60px;
+    .header {
+        padding: 0 1rem;
     }
 
-    h1 {
-        font-size: 1.35rem;
+    .tagline {
+        display: none;
+    }
+
+    .logo-name {
+        font-size: 1.1rem;
+    }
+
+    .app-container {
+        padding: 16px 16px 60px;
     }
 
     .tabs {
