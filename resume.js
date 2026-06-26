@@ -8,7 +8,7 @@ CORE COMPETENCIES
 Executive Intelligence & Advisory | Strategic Operations & Governance | Workforce & Organizational Analytics | AI-Powered Tool Development | Cross-Functional Leadership | Data-Driven Decision Frameworks | Operating Cadence Design | Board-Level Communications
 
 MICROSOFT -- Program Lead, Strategic Data & Operations (2025-2026)
-- Delivered workforce intelligence briefings to VP Site Leader, translating headcount trends, team composition, and engagement data into concrete recommendations for a 5,000-person organization.
+- Owned headcount planning as a core responsibility for Microsoft's Bay Area AI and Engineering hub, delivering workforce intelligence briefings to the VP Site Leader that translated headcount trends, team composition, and engagement data into concrete recommendations for a 5,000-person engineering organization.
 - Developed Board of Director nomination scenario models using the Hamilton method, producing executive briefing materials supporting high-stakes governance decisions.
 - Built AI-powered operational dashboards tracking headcount and compute usage, eliminating multi-week reporting lag for senior leadership.
 - Designed quantitative scoring models to evaluate and prioritize competing engineering initiatives, aligning resource allocation with highest-impact site goals.
